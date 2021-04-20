@@ -1,0 +1,39 @@
+#[cfg(feature = "display-window")]
+
+extern crate imageproc;
+extern crate image;
+extern crate rusttype;
+
+use imageproc::drawing::draw_text_mut;
+use imageproc::window::display_image;
+use rusttype::{Scale, Font};
+use image::Rgba;
+use std::io::{BufReader, BufRead};
+use std::fs::File;
+
+fn main() {
+    let mut image = image::open("/home/udit/CodingProjects/previewer_batbin/src/editor.png")
+    .expect("No image found at provided path")
+    .to_rgba8();
+
+    let font_data = include_bytes!("FiraCode-Retina.ttf") as &[u8];
+    let font: Font<'static> = Font::try_from_bytes(font_data).unwrap();
+
+    let file = File::open("code.txt").unwrap();
+    let reader = BufReader::new(file);
+
+    let mut line_num = 5;
+
+    for line in reader.lines() {
+        if line_num > 30 { break }
+        match line {
+            Ok(str) => {
+                draw_text_mut(&mut image, Rgba([255u8, 255u8, 255u8, 100u8]), 56, line_num, Scale { x: 18., y: 18. }, &font, &str);
+                line_num = line_num + 22;
+            },
+            Err(e) => println!("Something went wrong because: {}", e),
+        };
+    }
+
+    display_image("Preview", &image, 1486, 665)
+}
