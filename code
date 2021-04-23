@@ -30,5 +30,6 @@ impl<'cfg> DirectorySource<'cfg> {
             root: path.to_path_buf(),
             config,
             packages: HashMap::new(),
-        a
-    b
+        }
+    }
+}
