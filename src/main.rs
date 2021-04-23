@@ -1,4 +1,3 @@
-
 extern crate imageproc;
 extern crate image;
 extern crate rusttype;
@@ -98,6 +97,8 @@ async fn main() {
                         .to_rgba8();
 
     let font: Font<'static> = Font::try_from_bytes(include_bytes!("FiraCode-Retina.ttf") as &[u8]).unwrap();
+
+    println!("Starting warp server on port 3030");
 
     warp::serve(warp::path!("p" / String).and(with_pastes_dir(arg)).and(with_img(image)).and(with_font(font)).and_then(root_handler).with(warp::reply::with::headers(png_header)))
         .run(([127, 0, 0, 1], 3030))
