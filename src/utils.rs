@@ -8,7 +8,7 @@ use rusttype::Font;
 static STATE: OnceCell<AppState> = OnceCell::new();
 
 pub fn init_state(pastes: String, base_img: ImageBuffer<Rgba<u8>, Vec<u8>>, font: Font<'static>) {
-    STATE.set(AppState::new(pastes, base_img, font)).expect("Failed to initialize state!!!");
+    STATE.set(AppState::new(pastes, base_img, font)).ok().unwrap();
 }
 
 pub fn with_state() -> impl Filter<Extract = (&'static AppState,), Error = std::convert::Infallible> + Clone {
