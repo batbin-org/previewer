@@ -2,6 +2,7 @@ use rusttype::Font;
 use image::{ImageBuffer, Rgba};
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
+use std::path::Path;
 
 
 pub struct AppState {
@@ -14,13 +15,13 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(pastes: String, base_img: ImageBuffer<Rgba<u8>, Vec<u8>>, font: Font<'static>) -> Self {
-        let ts = ThemeSet::load_defaults();
+        let theme_path = format!("{}/{}", &pastes, "TwoDark.tmTheme");
         Self {
             pastes,
             base_img,
             font,
             syntaxes: SyntaxSet::load_defaults_newlines(),
-            highlight_theme: ts.themes["base16-ocean.dark"].clone(),
+            highlight_theme: ThemeSet::get_theme(Path::new(&theme_path)).unwrap_or_else(|_| panic!("Couldn't load the TwoDark theme!"))
         }
     }
 }
