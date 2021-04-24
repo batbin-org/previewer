@@ -32,13 +32,18 @@ async fn main() {
 
     println!("Starting warp server on port 3030");
 
-    let route = warp::path("p")
-                    .and(utils::with_state())
-                    .and(warp::path::param())
-                    .and_then(handlers::root_handler)
-                    .with(warp::reply::with::headers(png_header));
+    let p = warp::path("p");
+    let ap = utils::with_state()
+                        .and(warp::path::param())
+                        .and_then(handlers::root_handler);
 
-    warp::serve(route)
+    let pk = warp::path("pk");
+    let apk = utils::with_state()
+                        .and(warp::path::param())
+                        .and(warp::path::param())
+                        .and_then(handlers::root_handler_known);
+
+    warp::serve(p.and(ap).or(pk.and(apk)).with(warp::reply::with::headers(png_header)))
         .run(([127, 0, 0, 1], 3030))
         .await;
 }
