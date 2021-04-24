@@ -1,4 +1,4 @@
-use rusttype::{point, Font, PositionedGlyph, Rect, Scale};
+use rusttype::{point, Font, Scale};
 use std::cmp::max;
 use conv::ValueInto;
 use image::Pixel;
@@ -6,31 +6,7 @@ use imageproc::definitions::Clamp;
 use imageproc::drawing::Canvas;
 use imageproc::pixelops::weighted_sum;
 
-// These functions were taken from imageproc so that the
-// draw_text_mut function could be slightly modified to 
-// return the width used
-
-fn layout_glyphs(
-    scale: Scale,
-    font: &Font,
-    text: &str,
-    mut f: impl FnMut(PositionedGlyph, Rect<i32>),
-) -> (i32, i32) {
-    let v_metrics = font.v_metrics(scale);
-
-    let (mut w, mut h) = (0, 0);
-
-    for g in font.layout(text, scale, point(0.0, v_metrics.ascent)) {
-        if let Some(bb) = g.pixel_bounding_box() {
-            w = max(w, bb.max.x);
-            h = max(h, bb.max.y);
-            f(g, bb);
-        }
-    }
-
-    (w, h)
-}
-
+// custom draw_text forked from improc
 pub fn draw_text_mut_w<'a, C>(
     canvas: &'a mut C,
     color: C::Pixel,
@@ -43,24 +19,29 @@ pub fn draw_text_mut_w<'a, C>(
     C: Canvas,
     <C::Pixel as Pixel>::Subpixel: ValueInto<f32> + Clamp<f32>,
 {
-    let image_width = canvas.width() as i32;
-    let image_height = canvas.height() as i32;
+    let imw = canvas.width() as i32;
+    let imh = canvas.height() as i32;
+    let offset = point(0.0, font.v_metrics(scale).ascent);
 
-    let (w, _) = layout_glyphs(scale, font, text, |g, bb| {
-        g.draw(|gx, gy, gv| {
-            let gx = gx as i32 + bb.min.x;
-            let gy = gy as i32 + bb.min.y;
+    let mut mxw = 0;
+    for g in font.layout(text, scale, offset) {
+        if let Some(bb) = g.pixel_bounding_box() {
+            mxw = max(mxw, bb.max.x);
+            g.draw(|gx, gy, gv| {
+                let gx = gx as i32 + bb.min.x;
+                let gy = gy as i32 + bb.min.y;
 
-            let image_x = gx + x;
-            let image_y = gy + y;
+                let imx = gx + x;
+                let imy = gy + y;
 
-            if (0..image_width).contains(&image_x) && (0..image_height).contains(&image_y) {
-                let pixel = canvas.get_pixel(image_x as u32, image_y as u32);
-                let weighted_color = weighted_sum(pixel, color, 1.0 - gv, gv);
-                canvas.draw_pixel(image_x as u32, image_y as u32, weighted_color);
-            }
-        })
-    });
+                if imx >= 0 && imx < imw && imy >= 0 && imy < imh {
+                    let pixel = canvas.get_pixel(imx as u32, imy as u32);
+                    let weighted_color = weighted_sum(pixel, color, 1.0 - gv, gv);
+                    canvas.draw_pixel(imx as u32, imy as u32, weighted_color);
+                }
+            })
+        }
+    }
 
-    return w;
+    return mxw;
 }

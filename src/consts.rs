@@ -7,4 +7,4 @@ pub const MARGINS: [i32; 30] = [
     875, 914, 952, 990, 1028, 1066, 1105, 1143, 1181, 1219
 ];
 
-pub const IMG_SCALE: Scale = Scale { x: 24., y: 24. };
+pub const FONT_SCALE: Scale = Scale { x: 24., y: 24. };
