@@ -13,16 +13,19 @@ fn language_detect(src: &str) -> Result<String, Box<dyn std::error::Error>> {
     Ok(l)
 }
 
-fn get_syntax_lang<'a>(lang: &str, syntaxes: &'a SyntaxSet, ext: Option<String>) -> &'a SyntaxReference {
+fn get_syntax_lang<'a>(src: &str, syntaxes: &'a SyntaxSet, ext: Option<String>) -> Result<&'a SyntaxReference, Box<dyn std::error::Error>> {
     match ext {
         Some(e) => {
-            syntaxes.find_syntax_by_extension(&e)
-                .unwrap_or_else(|| syntaxes.find_syntax_plain_text())
+            let syn = syntaxes.find_syntax_by_extension(&e)
+                .unwrap_or_else(|| syntaxes.find_syntax_plain_text());
+            Ok(syn)
         },
 
         None => {
-            syntaxes.find_syntax_by_name(lang)
-                .unwrap_or_else(|| syntaxes.find_syntax_plain_text())
+            let lang = language_detect(src)?;
+            let syn = syntaxes.find_syntax_by_name(&lang)
+                .unwrap_or_else(|| syntaxes.find_syntax_plain_text());
+            Ok(syn)
         }
     }
 }
@@ -32,8 +35,7 @@ fn to_rgba8(color: &Color) -> Rgba<u8> {
 }
 
 pub fn render_preview(state: &AppState, src: &str, ext: Option<String>) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let lang = language_detect(src)?;
-    let syntax = get_syntax_lang(&lang, &state.syntaxes, ext);
+    let syntax = get_syntax_lang(src, &state.syntaxes, ext)?;
 
     let mut h = HighlightLines::new(syntax, &state.highlight_theme);
     let lines = src.split_inclusive("\n").take(18);
