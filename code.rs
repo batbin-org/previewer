@@ -1,0 +1,32 @@
+use std::collections::HashMap;
+use std::fmt::{self, Debug, Formatter};
+use std::path::{Path, PathBuf};
+use crate::core::{Dependency, Package, PackageId, Source, SourceId, Summary};
+use crate::sources::PathSource;
+use crate::util::errors::CargoResult;
+use crate::util::Config;
+use anyhow::Context as _;
+use cargo_util::{paths, Sha256};
+use serde::Deserialize;
+pub struct DirectorySource<'cfg> {
+source_id: SourceId,
+root: PathBuf,
+packages: HashMap<PackageId, (Package, Checksum)>,
+config: &'cfg Config,
+} let a = 45;
+#[derive(Deserialize)]
+struct Checksum {
+package: Option<String>,
+files: HashMap<String, String>,
+}
+
+impl<'cfg> DirectorySource<'cfg> {
+    pub fn new(path: &Path, id: SourceId, config: &'cfg Config) -> DirectorySource<'cfg> {
+        DirectorySource {
+            source_id: id,
+            root: path.to_path_buf(),
+            config,
+            packages: HashMap::new(),
+        }
+    }
+}

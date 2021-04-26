@@ -36,13 +36,13 @@ pub fn render_preview(state: &AppState, src: &str, ext: Option<String>) -> Resul
     let syntax = get_syntax_lang(&lang, &state.syntaxes, ext);
 
     let mut h = HighlightLines::new(syntax, &state.highlight_theme);
-    let lines = src.split_inclusive("\n").take(30);
+    let lines = src.split_inclusive("\n").take(18);
 
     let mut img2 = state.base_img.clone();
 
     for (i, line) in lines.enumerate() {
         let highlighted = h.highlight(&line, &state.syntaxes);
-        let mut w = 102;
+        let mut w = 64;
         for (style, chunk) in highlighted.iter() {
             let mut isspace = true; // whether the chunk is purely whitespace
             let mut sc = 0; // number of spaces in chunk
