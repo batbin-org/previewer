@@ -6,7 +6,9 @@ on:
 
 jobs:
   build:
-    runs-on: rust
+    runs-on: ubuntu-latest
+    container:
+      image: rust:latest
     steps:
       - run: git clone https://github.com/batbin-org/previewer /previewer
       - run: cd /previewer && cargo build --release
