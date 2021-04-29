@@ -3,6 +3,7 @@ use image::{ImageBuffer, Rgba};
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
 use std::path::Path;
+use syntect::dumps::{from_binary};
 
 
 pub struct AppState {
@@ -20,7 +21,7 @@ impl AppState {
             pastes,
             base_img,
             font,
-            syntaxes: SyntaxSet::load_defaults_newlines(),
+            syntaxes: from_binary::<SyntaxSet>(include_bytes!("../assets/syntaxes.bin")),
             highlight_theme: ThemeSet::get_theme(Path::new(&theme_path)).unwrap_or_else(|_| panic!("Couldn't load the TwoDark theme!"))
         }
     }
