@@ -1,0 +1,16 @@
+name: "Bob The Builder"
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: rust
+    steps:
+      - run: git clone https://github.com/batbin-org/previewer /previewer
+      - run: cd /previewer && cargo build --release
+      - uses: actions/upload-artifact@v2
+        with:
+          name: previewer_batbin
+          path: /previewer/target/release/previewer_batbin
