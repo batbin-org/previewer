@@ -3,6 +3,29 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
 use image::Rgba;
 
+const TAB_SIZE: u32 = 4;
+
+enum HighlightIter {
+    Single(Option<char>),
+    Tab(u32)
+}
+
+impl Iterator for HighlightIter {
+    type Item = char;
+    fn next(&mut self) -> Option<char> {
+        match self {
+            Self::Single(c) => c.take(),
+            Self::Tab(tabs_done) => if *tabs_done == TAB_SIZE {
+                None
+            } else {
+                *tabs_done += 1;
+                Some(' ')
+            }
+        }
+    }
+}
+
+
 fn to_rgba8(color: &Color) -> Rgba<u8> {
     Rgba::<u8>([color.r, color.g, color.b, color.a])
 }
@@ -27,18 +50,23 @@ pub fn render_preview(state: &AppState, src: &str, ext: Option<String>) -> Resul
             let mut cindx = 0; // last non-space character in chunk
             let mut c_s = 0; // length of the chunk
 
-            let c_string: String = chunk.chars().enumerate().filter_map(|(i, c)| match c {
-                '\n' => None, // doesn't contribute to length
+            let c_string: String = chunk.chars().enumerate().flat_map(|(i, c)| match c {
+                '\n' => HighlightIter::Single(None), // doesn't contribute to length
                 ' ' => {
                     sc += 1;
                     c_s += 1;
-                    Some(' ') 
+                    HighlightIter::Single(Some(' '))
+                },
+                '\t' => {
+                    sc += 4;
+                    c_s += 4;
+                    HighlightIter::Tab(0)
                 },
                 c => {
                     isspace = false; // chunk has non whitespace characters too!
                     cindx = i;
                     c_s += 1;
-                    Some(c) 
+                    HighlightIter::Single(Some(c))
                 }
             }).collect();
 
