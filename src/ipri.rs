@@ -1,10 +1,10 @@
-use rusttype::{point, Font, Scale};
-use std::cmp::max;
 use conv::ValueInto;
 use image::Pixel;
 use imageproc::definitions::Clamp;
 use imageproc::drawing::Canvas;
 use imageproc::pixelops::weighted_sum;
+use rusttype::{point, Font, Scale};
+use std::cmp::max;
 
 // custom draw_text forked from improc
 pub fn draw_text_mut_w<'a, C>(
@@ -15,7 +15,8 @@ pub fn draw_text_mut_w<'a, C>(
     scale: Scale,
     font: &'a Font<'a>,
     text: &'a str,
-) -> i32 where
+) -> i32
+where
     C: Canvas,
     <C::Pixel as Pixel>::Subpixel: ValueInto<f32> + Clamp<f32>,
 {
