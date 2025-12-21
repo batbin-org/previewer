@@ -1,16 +1,36 @@
 use crate::{app::AppState, syntax};
 use tokio::task;
-use tokio::fs;
-
 
 async fn get_preview(state: &'static AppState, uuid: String, ext: Option<String>) -> Result<impl warp::Reply, warp::Rejection> {
-    let f = format!("{}/{}", &state.pastes, uuid);
-    let code = fs::read_to_string(f).await.map_err(|_| warp::reject())?;
+    // Fetch paste content from API
+    let url = format!("{}/api/v2/paste/{}", &state.api_url, uuid);
+    
+    let response = state.http_client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| {
+            eprintln!("Failed to fetch paste {}: {}", uuid, e);
+            warp::reject()
+        })?;
+    
+    if !response.status().is_success() {
+        eprintln!("API returned {} for paste {}", response.status(), uuid);
+        return Err(warp::reject());
+    }
+    
+    let code = response
+        .text()
+        .await
+        .map_err(|e| {
+            eprintln!("Failed to read response body for {}: {}", uuid, e);
+            warp::reject()
+        })?;
 
     let rendered = task::spawn_blocking(move || -> Result<Vec<u8>, warp::Rejection> {
         let res = syntax::render_preview(state, &code, ext);
         return if let Err(e) = res {
-            eprintln!("err while trying to fetch preview for {}: {}", uuid, e);
+            eprintln!("err while trying to render preview for {}: {}", uuid, e);
             Err(warp::reject())
         } else {
             Ok(res.unwrap())

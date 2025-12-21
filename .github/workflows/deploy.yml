@@ -1,0 +1,71 @@
+name: Deploy Previewer
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+env:
+  REGISTRY_PROJECT: batbin
+  IMAGE_NAME: previewer
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.REGISTRY_URL }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Update deployment image
+        run: |
+          sed -i 's|image: previewer:latest|image: ${{ secrets.REGISTRY_URL }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}|g' deploy/previewer.yaml
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f deploy/previewer.yaml
+          
+      - name: Wait for deployment rollout
+        run: |
+          kubectl -n batbin rollout status deployment/batbin-previewer --timeout=120s
+
+      - name: Show deployment status
+        if: always()
+        run: |
+          kubectl -n batbin get pods -l app=batbin-previewer

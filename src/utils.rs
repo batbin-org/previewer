@@ -18,9 +18,9 @@ fn init_space_width(font: &Font<'static>) {
     SPACE_WIDTH.set(width).ok().expect("INVALID INIT STATE!!");
 }
 
-pub fn init_state(pastes: String, base_img: ImageBuffer<Rgba<u8>, Vec<u8>>, font: Font<'static>) {
+pub fn init_state(api_url: String, assets_path: String, base_img: ImageBuffer<Rgba<u8>, Vec<u8>>, font: Font<'static>) {
     init_space_width(&font);
-    STATE.set(AppState::new(pastes, base_img, font)).ok().expect("INVALID INIT STATE!!");
+    STATE.set(AppState::new(api_url, assets_path, base_img, font)).ok().expect("INVALID INIT STATE!!");
 }
 
 pub fn space_width() -> i32 {
