@@ -42,7 +42,7 @@ pub fn render_preview(state: &AppState, src: &str, ext: Option<String>) -> Resul
     let mut img2 = state.base_img.clone();
 
     for (i, line) in lines.enumerate() {
-        let highlighted = h.highlight(&line, &state.syntaxes);
+        let highlighted = h.highlight_line(&line, &state.syntaxes).unwrap_or_default();
         let mut w = 64;
         for (style, chunk) in highlighted.iter() {
             let mut isspace = true; // whether the chunk is purely whitespace

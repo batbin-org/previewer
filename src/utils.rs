@@ -1,6 +1,8 @@
 use crate::{app::AppState, consts};
 use std::ops::Deref;
-use image::{png::PngEncoder, ImageBuffer, Rgba, ImageError, Pixel};
+use std::io::Cursor;
+use image::{ImageBuffer, Rgba, ImageError, Pixel, ImageEncoder};
+use image::codecs::png::PngEncoder;
 use once_cell::sync::OnceCell;
 use warp::Filter;
 use rusttype::{point, Font};
@@ -37,7 +39,12 @@ where
     Container: Deref<Target = [P::Subpixel]>,
 {
     let mut buf = Vec::new();
-    let encoder = PngEncoder::new(&mut buf);
-    encoder.encode(img, img.width(), img.height(), P::COLOR_TYPE)?;
+    let encoder = PngEncoder::new(Cursor::new(&mut buf));
+    encoder.write_image(
+        img.as_raw(),
+        img.width(),
+        img.height(),
+        image::ColorType::Rgba8,
+    )?;
     Ok(buf)
 }
