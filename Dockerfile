@@ -44,7 +44,7 @@ COPY --from=builder /app/TwoDark.tmTheme /data/TwoDark.tmTheme
 COPY --from=builder /app/editor.png /data/editor.png
 
 # Environment variables
-ENV PASTE_API_URL=https://umbra.batbin.me/api
+ENV PASTE_API_URL=https://umbra.batbin.me
 
 EXPOSE 3030
 

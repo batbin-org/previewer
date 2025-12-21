@@ -19,7 +19,7 @@ async fn main() {
     
     // Get API URL from environment or use default
     let api_url = env::var("PASTE_API_URL")
-        .unwrap_or_else(|_| "https://umbra.batbin.me/api".to_string());
+        .unwrap_or_else(|_| "https://umbra.batbin.me".to_string());
     
     // Get assets path from command line or use default
     let assets_path = if env::args().count() >= 2 {
