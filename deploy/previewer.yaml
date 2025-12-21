@@ -67,7 +67,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: preview-umbra.batbin.me
+    - host: previews-umbra.batbin.me
       http:
         paths:
           - path: /
