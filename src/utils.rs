@@ -44,7 +44,7 @@ where
         img.as_raw(),
         img.width(),
         img.height(),
-        image::ColorType::Rgba8,
+        image::ColorType::Rgba8.into(),
     )?;
     Ok(buf)
 }

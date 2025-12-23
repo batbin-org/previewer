@@ -17,7 +17,7 @@ pub fn draw_text_mut_w<'a, C>(
     text: &'a str,
 ) -> i32 where
     C: Canvas,
-    <C::Pixel as Pixel>::Subpixel: ValueInto<f32> + Clamp<f32>,
+    <C::Pixel as Pixel>::Subpixel: ValueInto<f32> + Clamp<f32> + Into<f32>,
 {
     let imw = canvas.width() as i32;
     let imh = canvas.height() as i32;
