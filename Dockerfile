@@ -9,21 +9,13 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy manifests
+# Copy everything and build
 COPY Cargo.toml Cargo.lock ./
-
-# Create dummy src to cache dependencies
-RUN mkdir -p src assets && echo "fn main() {}" > src/main.rs
-RUN cargo build --release || true
-RUN rm -rf src
-
-# Copy actual source
 COPY src ./src
 COPY assets ./assets
 COPY TwoDark.tmTheme ./TwoDark.tmTheme
 COPY editor.png ./editor.png
 
-# Build release
 RUN cargo build --release
 
 # Runtime stage
