@@ -32,7 +32,7 @@ jobs:
       - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.REGISTRY_URL }}
+          registry: ${{ secrets.REGISTRY_HOST }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
@@ -42,8 +42,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.REGISTRY_URL }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ secrets.REGISTRY_URL }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:latest
+            ${{ secrets.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -55,7 +55,7 @@ jobs:
 
       - name: Update deployment image
         run: |
-          sed -i 's|image: previewer:latest|image: ${{ secrets.REGISTRY_URL }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}|g' deploy/previewer.yaml
+          sed -i 's|image: previewer:latest|image: ${{ secrets.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}|g' deploy/previewer.yaml
 
       - name: Deploy to Kubernetes
         run: |
